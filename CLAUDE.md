@@ -67,9 +67,10 @@ Guidelines for this pattern:
    (e.g. `.human-connection` styling and `--human-connection-*` markup
    live next to each other), with a comment explaining the pairing.
 4. Consuming code is responsible for parsing the property value out of
-   the stylesheet text (see `river_style.py::get_css_custom_property` in
-   `asap-ai` for the reference parser) and must provide a safe fallback
-   default in case the property is missing or the file can't be read.
+   the stylesheet text (e.g. a small helper function that reads
+   `wave.css` and regex-extracts the named custom property) and must
+   provide a safe fallback default in case the property is missing or
+   the file can't be read.
 
 ## Editing Guidelines
 
@@ -81,9 +82,9 @@ Guidelines for this pattern:
      Section name
      --------------------------------------------------------------------- */
   ```
-- When a rule replaces or formerly lived as inline Python/JS, note that
-  provenance in a comment (see existing examples referencing
-  `src/river_style.py`) so future readers can find the original context.
+- When a rule replaces or formerly lived as inline Python/JS in a
+  consuming application, note that provenance in a comment so future
+  readers can find the original context.
 - Prefer class selectors (`.my-component`) over ids, and prefer targeting
   Streamlit's own `data-testid` attributes where available for stability
   across Streamlit versions.

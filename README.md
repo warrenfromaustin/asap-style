@@ -39,8 +39,7 @@ Splitting these assets into their own repository:
 
 ## How consuming applications use these files
 
-A consuming app (see `asap-ai/src/river_style.py` for the reference
-implementation) is expected to:
+A consuming app is expected to:
 
 1. Vendor a copy of `wave.css` and `wave.js` into its own project root
    (or reference this repo as a submodule/dependency).
