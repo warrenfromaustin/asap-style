@@ -93,13 +93,63 @@ h1, h2, .stHeader {
 :root {
     --human-connection-open: "<div class=\"human-connection\">";
     --human-connection-close: "</div>";
+    --thinking-indicator-html: "<div class=\"thinking-dots\"><span></span><span></span><span></span></div>";
+}
+
+/* ---------------------------------------------------------------------
+   "Bot is thinking" typing indicator
+   Displayed as a temporary assistant chat bubble (see get_thinking_
+   indicator_html() in src/river_style.py, injected from on_chat_submit()
+   in src/river.py) while the AI response is being generated. Mirrors the
+   frosted-glass .stChatMessage bubble styling above so it reads as part
+   of the same chat flow, and is removed once the real reply is ready.
+   --------------------------------------------------------------------- */
+.thinking-dots {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 2px;
+}
+
+.thinking-dots span {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    animation: thinking-bounce 1.4s ease-in-out infinite;
+}
+
+/* Brand-gradient dot colors: purple → sky-blue → teal */
+.thinking-dots span:nth-child(1) {
+    background: #4f2991;
+    animation-delay: 0s;
+}
+.thinking-dots span:nth-child(2) {
+    background: #7dc4ff;
+    animation-delay: 0.2s;
+}
+.thinking-dots span:nth-child(3) {
+    background: #36cfcc;
+    animation-delay: 0.4s;
+}
+
+@keyframes thinking-bounce {
+    0%, 60%, 100% {
+        transform: translateY(0);
+        opacity: 0.55;
+    }
+    30% {
+        transform: translateY(-8px);
+        opacity: 1;
+    }
 }
 
 /* Disable Streamlit's built-in "stale element" fade transition.
    Streamlit marks elements as stale during a rerun and applies
    opacity: 0.33 with a 1s ease-in transition, which produces a
    fade-in effect (e.g. gray-to-black text) as new/refreshed content
-   appears. Force full opacity with no transition to eliminate this. */
+   appears. Force full opacity with no transition to eliminate this.
+   NOTE: .thinking-dots span is explicitly re-enabled below so the
+   thinking animation is not suppressed by this broad override. */
 [data-testid="stElementContainer"],
 [data-stale="true"],
 .stChatMessage,
@@ -107,6 +157,13 @@ h1, h2, .stHeader {
     opacity: 1 !important;
     transition: none !important;
     animation: none !important;
+}
+
+/* Re-enable the thinking-bounce animation for the dot spans.
+   This must come AFTER the broad override above so the cascade
+   restores animation only for these specific elements. */
+.thinking-dots span {
+    animation: thinking-bounce 1.4s ease-in-out infinite !important;
 }
 
 /* "Ask Jelly a Question" button styling */
