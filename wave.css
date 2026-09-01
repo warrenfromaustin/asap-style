@@ -1,86 +1,208 @@
-.stApp > header {
+/* ---------------------------------------------------------------------
+   App chrome: transparent Streamlit header + brand accent line
+   --------------------------------------------------------------------- */
+[data-testid="stHeader"] {
     background-color: transparent;
 }
 
-.stScreenCast {
-    margin: auto;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    overflow: auto;
-    background: linear-gradient(315deg, #4f2991 3%, #7dc4ff 38%, #36cfcc 68%, #a92ed3 98%);
-    animation: gradient 15s ease infinite;
-    background-size: 400% 400%;
-    background-attachment: fixed;
+/* Thin brand-gradient accent line pinned to the very top of the
+   viewport - a restrained nod to brand color instead of the old
+   full-page animated gradient background. */
+[data-testid="stApp"]::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #4f2991, #6b3fc0, #36cfcc);
+    z-index: 1000;
+    pointer-events: none;
 }
 
-@keyframes gradient {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+[data-testid="stApp"] {
+    background: #f6f6f9;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-tap-highlight-color: transparent;
 }
 
 /* ---------------------------------------------------------------------
-   Logo glow, chat bubbles, and interactive element styling
+   Global responsiveness & accessibility baseline
+   Small platform-level touches that make the app feel like a finished
+   product rather than a bare Streamlit page, on every screen size.
+   --------------------------------------------------------------------- */
+html {
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(32, 26, 53, 0.2) transparent;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(32, 26, 53, 0.15);
+    border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(32, 26, 53, 0.28);
+}
+
+/* Keep a visible, on-brand focus ring for keyboard users instead of
+   either the browser default or no indicator at all. */
+button:focus-visible,
+a:focus-visible {
+    outline: 2px solid #4f2991;
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+    }
+}
+
+/* ---------------------------------------------------------------------
+   Desktop-fitted content column
+   Keeps the app readable on wide desktop monitors without going
+   full-bleed edge to edge, while staying 100%-width (and therefore
+   unaffected) on narrower/mobile viewports. Side padding scales
+   smoothly with viewport width via clamp() instead of jumping at a
+   single breakpoint.
+   --------------------------------------------------------------------- */
+[data-testid="stMainBlockContainer"] {
+    max-width: 860px;
+    margin: 0 auto;
+    padding-left: clamp(12px, 4vw, 24px);
+    padding-right: clamp(12px, 4vw, 24px);
+}
+
+[data-testid="stBottom"] {
+    background: #f6f6f9;
+}
+
+[data-testid="stBottom"] > div {
+    background-color: transparent !important;
+}
+
+[data-testid="stBottomBlockContainer"] {
+    max-width: 860px;
+    margin: 0 auto;
+    background: transparent;
+    padding-left: clamp(12px, 4vw, 24px);
+    padding-right: clamp(12px, 4vw, 24px);
+    /* Keep the input clear of the home-indicator area on notched iOS
+       devices instead of sitting flush against the bottom edge. */
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+}
+
+/* ---------------------------------------------------------------------
+   Header row: company logo + title/tagline
    (formerly GLOWING_EFFECT_CSS in src/river_style.py)
    --------------------------------------------------------------------- */
 
-/* Logo glow - softer, brand-aligned */
-.cover-glow {
+/* Thin divider under the header row so it reads as a defined app
+   toolbar rather than text floating loose on the page background. */
+[data-testid="stHorizontalBlock"]:has([data-testid="stImage"]) {
+    border-bottom: 1px solid rgba(32, 26, 53, 0.08);
+    padding-bottom: 20px;
+    margin-bottom: 8px;
+}
+
+/* Logo badge - fixed square footprint so the mark reads consistently
+   no matter the source image's own size, aspect ratio, or resolution.
+   The column housing the logo is pinned to a fixed width (overriding
+   whatever column ratio the app passes to st.columns()), then the
+   image is centered and letterboxed inside a square card via
+   object-fit: contain, so a tall portrait photo, a wide wordmark, and
+   a small square icon all render as the same clean badge. */
+[data-testid="stColumn"]:has([data-testid="stImage"]) {
+    flex: 0 0 64px !important;
+    width: 64px !important;
+    min-width: 64px !important;
+    max-width: 64px !important;
+}
+
+[data-testid="stColumn"]:has([data-testid="stImage"]) [data-testid="stImageContainer"] {
     width: 100%;
-    height: auto;
-    padding: 3px;
-    box-shadow:
-        0 0 15px rgba(79, 41, 145, 0.4),
-        0 0 30px rgba(125, 196, 255, 0.2);
-    position: relative;
-    z-index: -1;
-    border-radius: 45px;
-    will-change: transform;
-    transform: translateZ(0);
-}
-
-/* Assistant chat bubbles - frosted glass card */
-.stChatMessage[data-testid="stChatMessage"]:has(.stMarkdown) {
-    background: rgba(255, 255, 255, 0.12);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    border: 1px solid rgba(32, 26, 53, 0.08);
     border-radius: 16px;
-    padding: 12px 18px;
-    margin-bottom: 12px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+    overflow: hidden;
+    padding: 8px;
 }
 
-.stChatMessage[data-testid="stChatMessage"]:has(.stMarkdown):hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+.cover-glow,
+[data-testid="stColumn"]:has([data-testid="stImage"]) img {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    object-position: center;
+    padding: 0;
+    box-shadow: none;
+    border-radius: 4px;
 }
 
-/* Chat input field polish
-.stChatInput textarea {
-    border-color: rgba(79, 41, 145, 0.6) !important;
-    box-shadow: 0 0 12px rgba(125, 196, 255, 0.5) !important;
-    padding: 12px 20px !important;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease !important;
+/* Heading + tagline text. Font size scales fluidly with viewport width
+   (clamp) instead of jumping at a single breakpoint, so it reads
+   comfortably from a small phone up to a wide desktop monitor. */
+[data-testid="stHeading"] h1,
+[data-testid="stHeading"] h2,
+[data-testid="stHeading"] h3 {
+    color: #201a35;
+    font-weight: 700;
+    font-size: clamp(1.25rem, 1rem + 1.1vw, 1.75rem);
+    line-height: 1.25;
 }
 
-.stChatInput textarea:focus {
-    border-color: rgba(79, 41, 145, 0.6) !important;
-    box-shadow: 0 0 12px rgba(125, 196, 255, 0.5) !important;
-}
-*/
-
-/* Header area refinement */
-h1, h2, .stHeader {
-    color: #ffffff;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-
-/* Human connection tagline wrapper (right column, under company header)
-   (formerly inline `st.html("<div col1>")` in src/river_style.py) */
 .human-connection {
     margin-top: 4px;
     margin-bottom: 8px;
+}
+
+/* Scoped directly to the .human-connection wrapper (not via an
+   ancestor :has() lookup) so this can never leak into unrelated
+   paragraphs elsewhere in the app - e.g. chat message bubbles - that
+   happen to share the same root stVerticalBlock. */
+.human-connection p {
+    color: #5b5470;
+}
+
+.human-connection p a {
+    color: #4f2991;
+    font-weight: 600;
+}
+
+/* Fallback for app builds that haven't yet wrapped the tagline in
+   .human-connection: scoped structurally to "the column in the header
+   row that isn't the logo column", which stays just as tightly scoped
+   to the header (and just as unable to leak into chat bubbles) without
+   depending on that wrapper markup existing. */
+[data-testid="stHorizontalBlock"]:has([data-testid="stImage"]) [data-testid="stColumn"]:not(:has([data-testid="stImage"])) p {
+    color: #5b5470;
+}
+
+[data-testid="stHorizontalBlock"]:has([data-testid="stImage"]) [data-testid="stColumn"]:not(:has([data-testid="stImage"])) p a {
+    color: #4f2991;
+    font-weight: 600;
 }
 
 /* ---------------------------------------------------------------------
@@ -97,12 +219,110 @@ h1, h2, .stHeader {
 }
 
 /* ---------------------------------------------------------------------
+   Chat messages
+   Bot avatar + bubble on the left, human avatar + bubble on the right,
+   distinguished via Streamlit's aria-label on stChatMessageContent
+   rather than DOM order/class names.
+   --------------------------------------------------------------------- */
+[data-testid="stChatMessage"] {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 6px 0 !important;
+    align-items: flex-start !important;
+}
+
+/* !important on the layout-critical properties below (flex-grow, width,
+   margin, flex-direction, background) is deliberate, not defensive
+   over-styling: Streamlit re-injects its own component styles (via
+   emotion) into the DOM on every rerun, and those land AFTER this
+   stylesheet. On equal specificity, later-in-DOM wins - so without
+   !important these rules silently lose the moment a user sends a
+   second chat message, even though they render correctly on first
+   paint. Confirmed live: bubbles collapsed to full-width, avatar-left
+   for both roles, after a few turns of real conversation. */
+[data-testid="stChatMessageContent"] {
+    flex-grow: 0 !important;
+    width: fit-content !important;
+    /* A single fluid cap (percentage + hard ceiling) instead of
+       separate desktop/mobile values - scales smoothly at every
+       width and still reads comfortably on a narrow phone. */
+    max-width: min(84%, 620px) !important;
+    background: #ffffff !important;
+    color: #201a35;
+    padding: 12px 18px;
+    border: 1px solid rgba(32, 26, 53, 0.07);
+    border-radius: 14px;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 2px 8px rgba(16, 24, 40, 0.05);
+    line-height: 1.55;
+    /* Long unbroken tokens (URLs, emails) wrap instead of forcing the
+       bubble - and the page - to scroll horizontally on mobile. */
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+[data-testid="stChatMessageContent"] p {
+    margin: 0 0 8px;
+}
+[data-testid="stChatMessageContent"] p:last-child {
+    margin-bottom: 0;
+}
+
+/* Defensive sizing for any markdown content Jelly's replies might
+   contain beyond plain paragraphs - images stay inside the bubble,
+   code blocks scroll horizontally instead of blowing out the layout. */
+[data-testid="stChatMessageContent"] img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+[data-testid="stChatMessageContent"] pre {
+    max-width: 100%;
+    overflow-x: auto;
+    border-radius: 8px;
+}
+[data-testid="stChatMessageContent"] code {
+    overflow-wrap: anywhere;
+}
+
+[data-testid="stChatMessageContent"][aria-label="Chat message from assistant"] {
+    margin: 0 auto 0 0 !important;
+}
+
+/* Bot avatar left, human avatar right */
+[data-testid="stChatMessage"]:has([data-testid="stChatMessageContent"][aria-label="Chat message from user"]) {
+    flex-direction: row-reverse !important;
+}
+
+[data-testid="stChatMessageContent"][aria-label="Chat message from user"] {
+    background: linear-gradient(135deg, #4f2991, #6b3fc0) !important;
+    border: none;
+    margin: 0 0 0 auto !important;
+}
+
+[data-testid="stChatMessageContent"][aria-label="Chat message from user"] p,
+[data-testid="stChatMessageContent"][aria-label="Chat message from user"] * {
+    color: #ffffff !important;
+}
+
+[data-testid="stChatMessage"] img {
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    border: 1px solid rgba(32, 26, 53, 0.08);
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
+}
+
+/* ---------------------------------------------------------------------
    "Bot is thinking" typing indicator
    Displayed as a temporary assistant chat bubble (see get_thinking_
    indicator_html() in src/river_style.py, injected from on_chat_submit()
-   in src/river.py) while the AI response is being generated. Mirrors the
-   frosted-glass .stChatMessage bubble styling above so it reads as part
-   of the same chat flow, and is removed once the real reply is ready.
+   in src/river.py) while the AI response is being generated. Renders
+   inside the same stChatMessageContent bubble styling above, so it
+   reads as part of the same chat flow, and is removed once the real
+   reply is ready.
    --------------------------------------------------------------------- */
 .thinking-dots {
     display: inline-flex;
@@ -112,23 +332,23 @@ h1, h2, .stHeader {
 }
 
 .thinking-dots span {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     animation: thinking-bounce 1.4s ease-in-out infinite;
 }
 
-/* Brand-gradient dot colors: purple → sky-blue → teal */
+/* Brand purple, dot-to-dot, in a single restrained hue family */
 .thinking-dots span:nth-child(1) {
     background: #4f2991;
     animation-delay: 0s;
 }
 .thinking-dots span:nth-child(2) {
-    background: #7dc4ff;
+    background: #7859b8;
     animation-delay: 0.2s;
 }
 .thinking-dots span:nth-child(3) {
-    background: #36cfcc;
+    background: #a68ddb;
     animation-delay: 0.4s;
 }
 
@@ -143,13 +363,65 @@ h1, h2, .stHeader {
     }
 }
 
-/* Disable Streamlit's built-in "stale element" fade transition.
+/* ---------------------------------------------------------------------
+   Chat input
+   --------------------------------------------------------------------- */
+[data-testid="stChatInput"] {
+    background: #ffffff;
+    border-radius: 999px;
+    border: 1px solid rgba(32, 26, 53, 0.12);
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+    padding: 4px 6px 4px 20px;
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+[data-testid="stChatInput"]:has(textarea:focus) {
+    border-color: rgba(79, 41, 145, 0.45);
+    box-shadow: 0 0 0 3px rgba(79, 41, 145, 0.12);
+}
+
+/* Suppress the browser's own default focus outline on the textarea so
+   it never doubles up with the custom ring above. Font size is pinned
+   to 16px - below that, iOS Safari auto-zooms the page on focus, which
+   reads as broken/unprofessional on mobile. */
+[data-testid="stChatInputTextArea"] {
+    outline: none !important;
+    box-shadow: none !important;
+    font-size: 16px !important;
+    line-height: 1.4;
+}
+
+/* Streamlit gives one of its own unlabeled internal wrapper divs a
+   hardcoded red focus border (its default accent color) independent of
+   any custom CSS. Neutralize any border color on every descendant of
+   the input pill so the only visible border is the pill's own (set
+   above) and the custom purple focus ring - never Streamlit's red. */
+[data-testid="stChatInput"] * {
+    border-color: transparent !important;
+}
+
+[data-testid="stChatInputSubmitButton"] {
+    background: linear-gradient(135deg, #4f2991, #6b3fc0);
+    border-radius: 50%;
+    /* Comfortable tap target on touch screens (Apple/WCAG guidance is
+       ~44px) rather than whatever compact size Streamlit defaults to. */
+    min-width: 40px;
+    min-height: 40px;
+}
+
+[data-testid="stChatInputSubmitButton"] svg {
+    fill: #ffffff;
+}
+
+/* ---------------------------------------------------------------------
+   Disable Streamlit's built-in "stale element" fade transition.
    Streamlit marks elements as stale during a rerun and applies
    opacity: 0.33 with a 1s ease-in transition, which produces a
    fade-in effect (e.g. gray-to-black text) as new/refreshed content
    appears. Force full opacity with no transition to eliminate this.
    NOTE: .thinking-dots span is explicitly re-enabled below so the
-   thinking animation is not suppressed by this broad override. */
+   thinking animation is not suppressed by this broad override.
+   --------------------------------------------------------------------- */
 [data-testid="stElementContainer"],
 [data-stale="true"],
 .stChatMessage,
@@ -166,20 +438,45 @@ h1, h2, .stHeader {
     animation: thinking-bounce 1.4s ease-in-out infinite !important;
 }
 
-/* "Ask Jelly a Question" button styling */
+/* ---------------------------------------------------------------------
+   "Ask Jelly a Question" button styling
+   --------------------------------------------------------------------- */
 .stButton > button {
-    background: linear-gradient(135deg, #4f2991, #7dc4ff);
+    background: linear-gradient(135deg, #4f2991, #6b3fc0);
     color: white;
     border: none;
     border-radius: 24px;
     padding: 12px 32px;
     font-weight: 600;
     font-size: 1rem;
-    box-shadow: 0 4px 15px rgba(79, 41, 145, 0.3);
+    min-height: 44px;
+    box-shadow: 0 2px 8px rgba(79, 41, 145, 0.2);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .stButton > button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(79, 41, 145, 0.45);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(79, 41, 145, 0.3);
+}
+
+/* ---------------------------------------------------------------------
+   Mobile responsiveness
+   Streamlit is already mobile-optimized (columns stack automatically
+   below its own breakpoint), and most spacing/sizing above now scales
+   fluidly via clamp()/min() rather than jumping at a single
+   breakpoint. What's left here is the logo badge's fixed footprint
+   (which can't be fluid - it's pinned so the mark reads consistently)
+   and slightly tighter bubble padding once things get tight.
+   --------------------------------------------------------------------- */
+@media (max-width: 640px) {
+    [data-testid="stColumn"]:has([data-testid="stImage"]) {
+        flex: 0 0 52px !important;
+        width: 52px !important;
+        min-width: 52px !important;
+        max-width: 52px !important;
+    }
+
+    [data-testid="stChatMessageContent"] {
+        padding: 10px 14px;
+    }
 }
